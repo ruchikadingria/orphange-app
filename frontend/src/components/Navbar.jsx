@@ -12,7 +12,6 @@ const Navbar = () => {
     { href: '#home', label: 'Home', route: '/' }, // Added route property
     { href: '#about', label: 'About Us' },
     { href: '#gallery', label: 'Gallery' },
-    { href: '#testimonials', label: 'Blogs' },
   ];
 
   return (

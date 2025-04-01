@@ -4,6 +4,8 @@ import { fadeIn, textVariant } from '../utils/motion';
 
 const DonationPage = () => {
     const [donationAmount, setDonationAmount] = useState('');
+    const [donorName, setDonorName] = useState('');
+    const [donorEmail, setDonorEmail] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -23,6 +25,18 @@ const DonationPage = () => {
             setError("Please enter a valid donation amount.");
             return;
         }
+        if (!donorName) {
+            setError("Please enter your name.");
+            return;
+        }
+        if (!donorEmail) {
+            setError("Please enter your email.");
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donorEmail)) {
+            setError("Please enter a valid email address.");
+            return;
+        }
 
         setLoading(true);
         setError(null);
@@ -31,7 +45,7 @@ const DonationPage = () => {
             const response = await fetch('http://localhost:5000/create-razorpay-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: Number(donationAmount)}), // Convert INR to paise
+                body: JSON.stringify({ amount: Number(donationAmount), name: donorName, email: donorEmail }),
             });
 
             const order = await response.json();
@@ -44,7 +58,7 @@ const DonationPage = () => {
             }
 
             const options = {
-                key: 'rzp_test_XTJdZH5bDA49ku', // Replace with your Razorpay Key ID
+                key: 'rzp_test_XTJdZH5bDA49ku',
                 amount: order.amount,
                 currency: order.currency,
                 name: 'Blessings Children Home',
@@ -52,12 +66,15 @@ const DonationPage = () => {
                 order_id: order.id,
                 handler: async (response) => {
                     console.log(response);
-                    await verifyPayment(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
+                    const verified = await verifyPayment(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
+                   
+                    clearForm();
+                    
                 },
                 prefill: {
-                    name: 'Donor Name',
-                    email: 'donor@example.com',
-                    contact: '9999999999',
+                    name: donorName,
+                    email: donorEmail,
+                    contact: '999999999',
                 },
                 theme: { color: '#3399cc' },
             };
@@ -81,13 +98,22 @@ const DonationPage = () => {
 
             const result = await response.json();
             if (result.success) {
-                alert("Payment Verified Successfully!");
+                alert("Payment Successful!");
+                return true;
             } else {
-                setError("Payment verification failed.");
+                setError("");
+                return false;
             }
         } catch (error) {
             setError("Error verifying payment.");
+            return false;
         }
+    };
+
+    const clearForm = () => {
+        setDonationAmount('');
+        setDonorName('');
+        setDonorEmail('');
     };
 
     return (
@@ -102,8 +128,40 @@ const DonationPage = () => {
             </motion.div>
 
             <motion.div variants={fadeIn('up', 0.5)}>
-                <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="bg-white p-8 rounded-lg shadow-md mx-auto" style={{width: '80%'}}>
                     <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                            Donor Name
+                        </label>
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                            <input
+                                type="text"
+                                name="name"
+                                id="name"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md py-2"
+                                value={donorName}
+                                onChange={(e) => setDonorName(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="mt-4">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            Donor Email
+                        </label>
+                        <div className="mt-1 relative rounded-md shadow-sm">
+                            <input
+                                type="email"
+                                name="email"
+                                id="email"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md py-2"
+                                value={donorEmail}
+                                onChange={(e) => setDonorEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="mt-4">
                         <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
                             Donation Amount (INR)
                         </label>
@@ -112,7 +170,7 @@ const DonationPage = () => {
                                 type="number"
                                 name="amount"
                                 id="amount"
-                                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md"
+                                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md py-2"
                                 placeholder="0.00"
                                 value={donationAmount}
                                 onChange={(e) => setDonationAmount(e.target.value)}
@@ -124,10 +182,11 @@ const DonationPage = () => {
                     <div className="mt-6">
                         <button
                             onClick={handlePayment}
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white"
+                            style={{ backgroundColor: '#219D80' }}
                             disabled={loading}
                         >
-                            {loading ? 'Processing...' : 'Donate Now'}
+                            {loading ? 'Processing...' : 'Proceed'}
                         </button>
                     </div>
                     {error && <p className="text-red-500 mt-2">{error}</p>}
