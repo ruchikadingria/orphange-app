@@ -1,0 +1,95 @@
+/* Donations.css */
+.donations-container {
+    padding: 20px;
+    margin-top: 60px;
+    overflow: hidden;
+}
+
+.donations-title {
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.sliding-donations {
+    width: 100%;
+    overflow: hidden;
+}
+
+.donations-track {
+    display: flex;
+    animation: slide 15s linear infinite;
+    white-space: nowrap;
+    will-change: transform; /* Improve performance */
+}
+
+.donation-card {
+    background-color: #219D80;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    width: 200px;
+    flex-shrink: 0;
+    color: white;
+    text-align: left;
+    height: 100px;
+    margin-right: 15px;
+}
+
+.donation-card:last-child {
+    margin-right: 0;
+}
+
+.donation-card:hover {
+    transform: translateY(-5px);
+}
+
+.person-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 15px;
+}
+
+.profile-icon {
+    font-size: 2.5em;
+    color: white;
+}
+
+.donation-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.donor-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.donation-message {
+    color: white;
+    font-size: 0.8em;
+}
+
+@keyframes slide {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+.total-donations{
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #219D80;
+}

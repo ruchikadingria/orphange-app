@@ -10,6 +10,7 @@ import ContactUs from './components/ContactUs';
 import Footer from './components/Footer';
 import DonationPage from './components/DonationPage';
 import PhotoGallery from './components/PhotoGallery';
+import Donations from './components/Donations';
 import { Routes, Route } from 'react-router-dom';
 
 function App() {
@@ -33,7 +34,12 @@ function App() {
                             </>
                         }
                     />
-                    <Route path="/donate" element={<DonationPage />} />
+                    <Route path="/donate" element={
+                        <>
+                            <Donations />
+                            <DonationPage />
+                        </>
+                        } />
                 </Routes>
                 <Footer />
             </div>

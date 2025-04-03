@@ -1,3 +1,4 @@
+// React Frontend (DonationPage.js)
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { fadeIn, textVariant } from '../utils/motion';
@@ -14,27 +15,27 @@ const DonationPage = () => {
             const script = document.createElement('script');
             script.src = 'https://checkout.razorpay.com/v1/checkout.js';
             script.async = true;
-            script.onload = () => console.log("Razorpay SDK Loaded");
-            script.onerror = () => console.error("Failed to load Razorpay SDK");
+            script.onload = () => console.log('Razorpay SDK Loaded');
+            script.onerror = () => console.error('Failed to load Razorpay SDK');
             document.body.appendChild(script);
         }
     }, []);
 
     const handlePayment = async () => {
         if (!donationAmount || donationAmount <= 0) {
-            setError("Please enter a valid donation amount.");
+            setError('Please enter a valid donation amount.');
             return;
         }
         if (!donorName) {
-            setError("Please enter your name.");
+            setError('Please enter your name.');
             return;
         }
         if (!donorEmail) {
-            setError("Please enter your email.");
+            setError('Please enter your email.');
             return;
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donorEmail)) {
-            setError("Please enter a valid email address.");
+            setError('Please enter a valid email address.');
             return;
         }
 
@@ -42,6 +43,8 @@ const DonationPage = () => {
         setError(null);
 
         try {
+            await storeDonationData();
+
             const response = await fetch('http://localhost:5000/create-razorpay-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -49,10 +52,10 @@ const DonationPage = () => {
             });
 
             const order = await response.json();
-            if (!order.id) throw new Error("Failed to create order.");
+            if (!order.id) throw new Error('Failed to create order.');
 
             if (!window.Razorpay) {
-                setError("Razorpay SDK not loaded. Please refresh the page.");
+                setError('Razorpay SDK not loaded. Please refresh the page.');
                 setLoading(false);
                 return;
             }
@@ -67,9 +70,11 @@ const DonationPage = () => {
                 handler: async (response) => {
                     console.log(response);
                     const verified = await verifyPayment(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
-                   
+
+                    if (verified) {
+                        alert('Payment Successful');
+                    }
                     clearForm();
-                    
                 },
                 prefill: {
                     name: donorName,
@@ -98,15 +103,35 @@ const DonationPage = () => {
 
             const result = await response.json();
             if (result.success) {
-                alert("Payment Successful!");
                 return true;
             } else {
-                setError("");
+                setError('');
                 return false;
             }
         } catch (error) {
-            setError("Error verifying payment.");
+            setError('Error verifying payment.');
             return false;
+        }
+    };
+
+    const storeDonationData = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/store-donation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    donorName: donorName,
+                    donorEmail: donorEmail,
+                    donationAmount: donationAmount,
+                }),
+            });
+
+            const result = await response.json();
+            if (!result.success) {
+                setError('Failed to store donation data.');
+            }
+        } catch (error) {
+            setError('Error storing donation data: ' + error.message);
         }
     };
 
@@ -117,7 +142,7 @@ const DonationPage = () => {
     };
 
     return (
-        <section id="donate" className="py-16 px-4 max-w-3xl mx-auto mt-24">
+        <section id="donate" className="py-2 px-2 max-w-3xl mx-auto mt-19">
             <motion.div variants={fadeIn('up', 0.3)} className="text-center mb-12">
                 <motion.h2 variants={textVariant(0.2)} className="text-3xl md:text-4xl font-bold mb-4">
                     Make a Donation
@@ -128,7 +153,7 @@ const DonationPage = () => {
             </motion.div>
 
             <motion.div variants={fadeIn('up', 0.5)}>
-                <div className="bg-white p-8 rounded-lg shadow-md mx-auto" style={{width: '80%'}}>
+                <div className="bg-white p-8 rounded-lg shadow-md mx-auto" style={{ width: '80%' }}>
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                             Donor Name
